@@ -20,18 +20,12 @@ with open("people.csv", "r") as f:
         name.append(str(fname_str))
 
 
-
-#print(name)
-
 url = "https://emn178.github.io/online-tools/crc32.html"
 driver.get(url)
 time.sleep(2)
 
-
-
-
-
 namesUnc = []
+name_unc = {}
 for names in name:
         find1 = driver.find_element(By.ID, "input")
         last = find1.send_keys(names)    
@@ -39,8 +33,39 @@ for names in name:
         temp = find.get_attribute("value")
         namesUnc.append(temp)
         find1.clear()
+        name_unc[names] = temp
 
-print(namesUnc)
+wb = load_workbook('salary.xlsx')
+ws = wb.active
+
+salary_dict = {}
+for row in ws.iter_rows(values_only=True):
+    coded_name = row[0]
+    salary = row[1]
+    if coded_name in namesUnc:
+        if coded_name not in salary_dict:
+            salary_dict[coded_name] = 0
+        salary_dict[coded_name] += salary
+
+print(salary_dict)
+print(name_unc)
+new_workbook = Workbook()
+new_sheet = new_workbook.active
+new_sheet.insert_cols(3)
+
+for i, (vards, coded_name) in enumerate(name_unc.items(), start=1):
+    new_sheet.cell(row=i, column=1, value=vards)
+    new_sheet.cell(row=i, column=2, value=salary_dict.get(coded_name, 0))
+   
+new_workbook.save("darbnieku_algas.xlsx")
+
+             
 
     
-    
+
+
+
+
+
+
+
